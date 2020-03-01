@@ -1,0 +1,24 @@
+%class CheckSMC
+
+%start MainMap::Start
+
+%map MainMap
+%%
+Default {
+    Start           Start   { ClearSMC(); }
+    FirstLetter     Error   { ErrorType(); }
+    FirstDigit      Error   { ErrorType(); }
+    EndLine         Error   { ErrorType(); }
+    IDKthing        Error   { ErrorType(); }
+}
+Locked
+{
+	coin Unlocked { unlock(); }
+	passon nil { alarm(); }
+}
+Unlocked
+{
+	passon Locked { lock(); }
+	coin nil { thankyou(); }
+}
+%%
