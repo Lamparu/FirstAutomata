@@ -1,6 +1,6 @@
 %class CheckSMC
 
-%start MainMap::Start
+%start MainMap::StrNumber
 
 %map MainMap
 %%
@@ -11,14 +11,35 @@ Default {
     EndLine         Error   { ErrorType(); }
     IDKthing        Error   { ErrorType(); }
 }
-Locked
-{
-	coin Unlocked { unlock(); }
-	passon nil { alarm(); }
+
+StrNumber {
+    Digit           StrNumber   {}
+    Space           EqualSymbol {}
+    Letter          Error       { ErrorType(); }
+    Unknown         Error       { ErrorType(); }
+    EOS             Error       { ErrorType(); }
 }
-Unlocked
-{
-	passon Locked { lock(); }
-	coin nil { thankyou(); }
+
+EqualSymbol {
+    Space           StrLit      {}
+    Unknown         Error       { ErrorType(); }
+    EOS             Error       { ErrorType(); }
 }
+
+StrLit {
+    Letter          StrLit      {}
+    Digital         StrLit      {}  //условие, чтобы если первый, то следующая не буква, то не 0
+    MinusSymbol     StrLit      {}
+    Unknown         Error       { ErrorType(); }
+    EOS             ???         {}    //если далее что-то есть - ошибка, если нет - конец ввода
+    SpaceSymbol     OperSign    {}
+}
+
+OperSign {
+    SpaceSymbol     Strlit      {}
+    Unknown         Error       { ErrorType(); }
+    EOS             Error       { ErrorType(); }
+}
+
+
 %%

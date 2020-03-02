@@ -1,5 +1,7 @@
 from strgen import StringGenerator
 from random import randint
+from checkREG import refer
+import re
 
 
 def buildNameVar():
@@ -125,10 +127,11 @@ def buildstr(num):
         return buildFalseStr(num)
 
 
-f = open('genSTR.txt', 'w')
-ind = 1
-for index in [buildstr(i) for i in range(1, 1000001)]:
-    f.write(index + '\n')
-    print(ind)
-    ind += 1
-f.close()
+def FILEgenerator():
+    f = open('genSTR.txt', 'w')
+    ind = 1
+    for index in [buildstr(i) for i in range(1, 1000001)]:
+        f.write(index + '\n')
+        print(ind)
+        ind += 1
+    f.close()
