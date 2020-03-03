@@ -6,7 +6,7 @@ import re
 
 def buildNameVar():
     namevar = StringGenerator('[a-zA-Z]{1}').render()
-    namevar += StringGenerator('[a-zA-Z0-9]{1:15}').render()
+    namevar += StringGenerator('[\w]{1:15}').render()
     return namevar
 
 
@@ -17,19 +17,6 @@ def buildStrLit():
     strlit += str(randint(1, 9))
     strlit += StringGenerator('[\d]{1:3}').render()
     return strlit
-
-
-def badStrLit(ch):
-    strlit = ''
-    if ch == 9:
-        return StringGenerator('[\w]{1:6}').render()
-    if ch == 10:
-        strlit = '0' + StringGenerator('[\d]{1:3}').render()
-        return strlit
-    if ch == 11:
-        return StringGenerator('[\d]{1:3}').render() + '-'
-    else:
-        return buildStrLit()
 
 
 def chooseOperator():
@@ -53,12 +40,19 @@ def buildTrueStr(num):
         nstr += namevar
     else:
         nstr += buildStrLit()
-    if randint(1, 3) % 2 == 1:
-        nstr += chooseOperator()
-        if randint(1, 2) % 2 == 0:
-            nstr += namevar
-        else:
-            nstr += buildStrLit()
+    i = randint(0, 20)
+    while i > 0:
+        nstr += buildOperLitstr(namevar)
+        i -= 1
+    return nstr
+
+
+def buildOperLitstr(namevar):
+    nstr = chooseOperator()
+    if randint(1, 2) % 2 == 0:
+        nstr += namevar
+    else:
+        nstr += buildStrLit()
     return nstr
 
 
@@ -76,12 +70,12 @@ def _longNameVar():
 
 
 def buildFalseStr(num):
-    choice = randint(1, 15)
-    if choice == 13:
+    choice = randint(1, 14)
+    if choice == 12:
         nstr = 'a'
-    elif choice == 14:
+    elif choice == 13:
         nstr = ''
-    elif choice == 15:
+    elif choice == 14:
         nstr = '-' + str(num) + ' '
     else:
         nstr = str(num) + ' '
@@ -99,29 +93,38 @@ def buildFalseStr(num):
         nstr += namevar + ' '
     else:
         nstr += namevar + ' = '
-    if randint(1, 2) % 2 == 0:
-        if choice == 6:
-            namevar = StringGenerator('[\w]{1:16}').render()
+    if choice == 6:
+        namevar = StringGenerator('[\w]{1:16}').render()
         nstr += namevar
     else:
-        nstr += buildStrLit()
-    if randint(1, 3) % 2 == 1:
-        if choice == 7:
-            nstr += StringGenerator(' [\&\/\{\)] ').render()
-        elif choice == 12:
-            nstr += ' '
+        if randint(1, 2) % 2 == 0:
+            nstr += namevar
         else:
-            nstr += chooseOperator()
-        if choice != 8:
-            if randint(1, 2) % 2 == 0:
-                nstr += namevar
-            else:
-                nstr += badStrLit(choice)
+            nstr += buildStrLit()
+    if choice == 7:
+        nstr += StringGenerator(' [\&\/\{\)] ').render()
+    elif choice == 11:
+        nstr += ' '
+    else:
+        nstr += chooseOperator()
+    if choice == 8:
+        return nstr
+    elif choice == 9:
+        strlit = '0' + StringGenerator('[\d]{1:3}').render()
+    elif choice == 10:
+        strlit = StringGenerator('[\d]{1:3}').render() + '-'
+    else:
+        strlit = buildStrLit()
+    nstr += strlit
+    i = randint(0, 10)
+    while i > 0:
+        nstr += buildOperLitstr(namevar)
+        i -= 1
     return nstr
 
 
 def buildstr(num):
-    if randint(1, 500000000) == 3:
+    if randint(1, 100000) == 3:
         return buildTrueStr(num)
     else:
         return buildFalseStr(num)

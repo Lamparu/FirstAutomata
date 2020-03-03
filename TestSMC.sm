@@ -1,45 +1,69 @@
 %class CheckSMC
 
-%start MainMap::StrNumber
+%start MainMap::Start
 
 %map MainMap
 %%
 Default {
-    Start           Start   { ClearSMC(); }
-    FirstLetter     Error   { ErrorType(); }
-    FirstDigit      Error   { ErrorType(); }
-    EndLine         Error   { ErrorType(); }
-    IDKthing        Error   { ErrorType(); }
+    Start           Start       { ClearSMC(); }
+    Letter          Error       { Unacceptable(); }
+    Digit           Error       { Unacceptable(); }
+    EqSign          Error       { Unacceptable(); }
+    OpSign          Error       { Unacceptable(); }
+    MinSign         Error       { Unacceptable(); }
+    Unknown         Error       { Unacceptable(); }
 }
 
-StrNumber {
-    Digit           StrNumber   {}
-    Space           EqualSymbol {}
-    Letter          Error       { ErrorType(); }
-    Unknown         Error       { ErrorType(); }
-    EOS             Error       { ErrorType(); }
+Start {
+    Digit           StrDig      {}
+    SpaceSym        Start         {}
+    EOS             Error       { Unacceptable(); }
 }
 
-EqualSymbol {
-    Space           StrLit      {}
-    Unknown         Error       { ErrorType(); }
-    EOS             Error       { ErrorType(); }
+Space {
+    SpaceSym        Space                             {}
+    Letter          StrLit                          {}
+    Digit           StrDig                          {}
+    EqSign          EqualSign                       {}
+    OpSign          OperSign                        {}
+    MinSign         MinusSign                       {}
+    EOS [ctxt.checkNames]  OK                       { Acceptable(); }
+
+}
+
+StrDig {
+    Digit [ctxt.isLess16()]          nil         {}
+    SpaceSym        Space       {}
+    EOS [ctxt.checkNames()]            OK       { Acceptable(); }
+}
+
+EqualSign {
+    SpaceSym        Space       {}
+    EOS             Error       { Unacceptable(); }
 }
 
 StrLit {
-    Letter          StrLit      {}
-    Digital         StrLit      {}  //условие, чтобы если первый, то следующая не буква, то не 0
-    MinusSymbol     StrLit      {}
-    Unknown         Error       { ErrorType(); }
-    EOS             ???         {}    //если далее что-то есть - ошибка, если нет - конец ввода
-    SpaceSymbol     OperSign    {}
+    Letter [ctxt.isLess16()]         nil                             {}
+    Digital [ctxt.isLess16()]        nil                             {}
+    EOS [ctxt.isnotValName() and ctxt.checkNames()]            OK           { Acceptable(); }
+    SpaceSym        Space                           {}
 }
 
 OperSign {
-    SpaceSymbol     Strlit      {}
-    Unknown         Error       { ErrorType(); }
-    EOS             Error       { ErrorType(); }
+    SpaceSym        Space       {}
+    EOS             Error       { Unacceptable(); }
 }
 
+MinusSign {
+    Digit       StrDig          {}
+    Letter      StrLit          {}
+    SpaceSym    Error           { Unacceptable(); }
+    EOS         Error           { Unacceptable(); }
+}
 
+Error {
+    EOS         nil             { Unacceptable(); }
+}
+
+OK {}
 %%

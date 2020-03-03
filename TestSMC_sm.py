@@ -6,7 +6,7 @@
 import statemap
 
 
-class TurnstileState(statemap.State):
+class CheckSMCState(statemap.State):
 
     def Entry(self, fsm):
         pass
@@ -14,10 +14,34 @@ class TurnstileState(statemap.State):
     def Exit(self, fsm):
         pass
 
-    def coin(self, fsm):
+    def Digit(self, fsm):
         self.Default(fsm)
 
-    def passon(self, fsm):
+    def Digital(self, fsm):
+        self.Default(fsm)
+
+    def EOS(self, fsm):
+        self.Default(fsm)
+
+    def EqSign(self, fsm):
+        self.Default(fsm)
+
+    def Letter(self, fsm):
+        self.Default(fsm)
+
+    def MinSign(self, fsm):
+        self.Default(fsm)
+
+    def OpSign(self, fsm):
+        self.Default(fsm)
+
+    def SpaceSym(self, fsm):
+        self.Default(fsm)
+
+    def Start(self, fsm):
+        self.Default(fsm)
+
+    def Unknown(self, fsm):
         self.Default(fsm)
 
     def Default(self, fsm):
@@ -25,65 +49,333 @@ class TurnstileState(statemap.State):
             fsm.getState().getName(), fsm.getTransition())
         raise statemap.TransitionUndefinedException(msg)
 
-class MainMap_Default(TurnstileState):
+class MainMap_Default(CheckSMCState):
+
+    def Start(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.ClearSMC()
+        finally:
+            fsm.setState(MainMap.Start)
+            fsm.getState().Entry(fsm)
+
+
+    def Letter(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def Digit(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def EqSign(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def OpSign(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def MinSign(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def Unknown(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+class MainMap_Start(MainMap_Default):
+
+    def Digit(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.StrDig)
+        fsm.getState().Entry(fsm)
+
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Start)
+        fsm.getState().Entry(fsm)
+
+
+class MainMap_Space(MainMap_Default):
+
+    def Digit(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.StrDig)
+        fsm.getState().Entry(fsm)
+
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        if ctxt.checkNames :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.Acceptable()
+            finally:
+                fsm.setState(MainMap.OK)
+                fsm.getState().Entry(fsm)
+        else:
+            MainMap_Default.EOS(self, fsm)
+        
+    def EqSign(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.EqualSign)
+        fsm.getState().Entry(fsm)
+
+
+    def Letter(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.StrLit)
+        fsm.getState().Entry(fsm)
+
+
+    def MinSign(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.MinusSign)
+        fsm.getState().Entry(fsm)
+
+
+    def OpSign(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.OperSign)
+        fsm.getState().Entry(fsm)
+
+
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Space)
+        fsm.getState().Entry(fsm)
+
+
+class MainMap_StrDig(MainMap_Default):
+
+    def Digit(self, fsm):
+        ctxt = fsm.getOwner()
+        if ctxt.isLess16() :
+            # No actions.
+            pass
+        else:
+            MainMap_Default.Digit(self, fsm)
+        
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        if ctxt.checkNames() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.Acceptable()
+            finally:
+                fsm.setState(MainMap.OK)
+                fsm.getState().Entry(fsm)
+        else:
+            MainMap_Default.EOS(self, fsm)
+        
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Space)
+        fsm.getState().Entry(fsm)
+
+
+class MainMap_EqualSign(MainMap_Default):
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Space)
+        fsm.getState().Entry(fsm)
+
+
+class MainMap_StrLit(MainMap_Default):
+
+    def Digital(self, fsm):
+        ctxt = fsm.getOwner()
+        if ctxt.isLess16() :
+            # No actions.
+            pass
+        else:
+            MainMap_Default.Digital(self, fsm)
+        
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        if ctxt.isnotValName() and ctxt.checkNames() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.Acceptable()
+            finally:
+                fsm.setState(MainMap.OK)
+                fsm.getState().Entry(fsm)
+        else:
+            MainMap_Default.EOS(self, fsm)
+        
+    def Letter(self, fsm):
+        ctxt = fsm.getOwner()
+        if ctxt.isLess16() :
+            # No actions.
+            pass
+        else:
+            MainMap_Default.Letter(self, fsm)
+        
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Space)
+        fsm.getState().Entry(fsm)
+
+
+class MainMap_OperSign(MainMap_Default):
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Space)
+        fsm.getState().Entry(fsm)
+
+
+class MainMap_MinusSign(MainMap_Default):
+
+    def Digit(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.StrDig)
+        fsm.getState().Entry(fsm)
+
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def Letter(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.StrLit)
+        fsm.getState().Entry(fsm)
+
+
+    def SpaceSym(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+class MainMap_Error(MainMap_Default):
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        endState = fsm.getState()
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(endState)
+
+
+class MainMap_OK(MainMap_Default):
     pass
-
-class MainMap_Locked(MainMap_Default):
-
-    def coin(self, fsm):
-        ctxt = fsm.getOwner()
-        fsm.getState().Exit(fsm)
-        fsm.clearState()
-        try:
-            ctxt.unlock()
-        finally:
-            fsm.setState(MainMap.Unlocked)
-            fsm.getState().Entry(fsm)
-
-
-    def passon(self, fsm):
-        ctxt = fsm.getOwner()
-        endState = fsm.getState()
-        fsm.clearState()
-        try:
-            ctxt.alarm()
-        finally:
-            fsm.setState(endState)
-
-
-class MainMap_Unlocked(MainMap_Default):
-
-    def coin(self, fsm):
-        ctxt = fsm.getOwner()
-        endState = fsm.getState()
-        fsm.clearState()
-        try:
-            ctxt.thankyou()
-        finally:
-            fsm.setState(endState)
-
-
-    def passon(self, fsm):
-        ctxt = fsm.getOwner()
-        fsm.getState().Exit(fsm)
-        fsm.clearState()
-        try:
-            ctxt.lock()
-        finally:
-            fsm.setState(MainMap.Locked)
-            fsm.getState().Entry(fsm)
-
 
 class MainMap(object):
 
-    Locked = MainMap_Locked('MainMap.Locked', 0)
-    Unlocked = MainMap_Unlocked('MainMap.Unlocked', 1)
+    Start = MainMap_Start('MainMap.Start', 0)
+    Space = MainMap_Space('MainMap.Space', 1)
+    StrDig = MainMap_StrDig('MainMap.StrDig', 2)
+    EqualSign = MainMap_EqualSign('MainMap.EqualSign', 3)
+    StrLit = MainMap_StrLit('MainMap.StrLit', 4)
+    OperSign = MainMap_OperSign('MainMap.OperSign', 5)
+    MinusSign = MainMap_MinusSign('MainMap.MinusSign', 6)
+    Error = MainMap_Error('MainMap.Error', 7)
+    OK = MainMap_OK('MainMap.OK', 8)
     Default = MainMap_Default('MainMap.Default', -1)
 
-class Turnstile_sm(statemap.FSMContext):
+class CheckSMC_sm(statemap.FSMContext):
 
     def __init__(self, owner):
-        statemap.FSMContext.__init__(self, MainMap.Locked)
+        statemap.FSMContext.__init__(self, MainMap.Start)
         self._owner = owner
 
     def __getattr__(self, attrib):
