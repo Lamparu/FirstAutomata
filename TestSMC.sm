@@ -7,7 +7,7 @@
 Default {
     Start           Start       { ClearSMC(); }
     Letter          Error       { Unacceptable(); }
-    Digit           Error       { Unacceptable(); }
+    Digital         Error       { Unacceptable(); }
     EqSign          Error       { Unacceptable(); }
     OpSign          Error       { Unacceptable(); }
     MinSign         Error       { Unacceptable(); }
@@ -15,25 +15,25 @@ Default {
 }
 
 Start {
-    Digit           StrDig      {}
+    Digital         StrDig        {}
     SpaceSym        Start         {}
-    EOS             Error       { Unacceptable(); }
+    EOS             Error         { Unacceptable(); }
 }
 
 Space {
-    SpaceSym        Space                             {}
-    Letter          StrLit                          {}
-    Digit           StrDig                          {}
-    EqSign          EqualSign                       {}
+    SpaceSym        Space                           {}
+    Letter          StrLit                          { CounterInc(); LengthInc();}
+    Digital         StrDig                          { LengthInc(); }
+    EqSign [ ctxt.EqSignIsNotUsed() ]         EqualSign                       {}
     OpSign          OperSign                        {}
     MinSign         MinusSign                       {}
-    EOS [ctxt.checkNames]  OK                       { Acceptable(); }
+    EOS [ctxt.checkNames()]  OK                     { Acceptable(); }
 
 }
 
 StrDig {
-    Digit [ctxt.isLess16()]          nil         {}
-    SpaceSym        Space       {}
+    Digital [ctxt.isLess16()]          nil         { LengthInc(); }
+    SpaceSym        Space       { LengthZero(); }
     EOS [ctxt.checkNames()]            OK       { Acceptable(); }
 }
 
@@ -43,10 +43,10 @@ EqualSign {
 }
 
 StrLit {
-    Letter [ctxt.isLess16()]         nil                             {}
-    Digital [ctxt.isLess16()]        nil                             {}
-    EOS [ctxt.isnotValName() and ctxt.checkNames()]            OK           { Acceptable(); }
-    SpaceSym        Space                           {}
+    Letter [ctxt.isLess16()]         nil            { LengthInc(); }
+    Digital [ctxt.isLess16()]        nil            { LengthInc(); }
+    EOS [ctxt.isCounterMoreOne() and ctxt.checkNames()]            OK           { Acceptable(); }
+    SpaceSym        Space                           { LengthZero(); }
 }
 
 OperSign {
@@ -55,8 +55,8 @@ OperSign {
 }
 
 MinusSign {
-    Digit       StrDig          {}
-    Letter      StrLit          {}
+    Digital     StrDig          { LengthInc(); }
+    Letter      StrLit          { LengthInc(); }
     SpaceSym    Error           { Unacceptable(); }
     EOS         Error           { Unacceptable(); }
 }
