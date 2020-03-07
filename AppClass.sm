@@ -1,0 +1,77 @@
+%class AppClass
+
+%start MainMap::Start
+
+%map MainMap
+%%
+Default {
+    Start           Start       { ClearSMC(); }
+    Letter          Error       { Unacceptable(); }
+    Zero            Error       { Unacceptable(); }
+    Digital         Error       { Unacceptable(); }
+    EqSign          Error       { Unacceptable(); }
+    OpSign          Error       { Unacceptable(); }
+    MinSign         Error       { Unacceptable(); }
+    Unknown         Error       { Unacceptable(); }
+    SpaceSym        Error       { Unacceptable(); }
+}
+
+Start {
+    Digital         StrDig        {}
+    SpaceSym        Start         {}
+    EOS             Error         { Unacceptable(); }
+}
+
+Space {
+    SpaceSym        Space                           {}
+    Letter          StrLit                          { CounterInc(); LengthInc();}
+    Digital         StrDig                          { LengthInc(); }
+    EqSign [ ctxt.EqSignIsNotUsed() ]         EqualSign                       { UseOperSign(); }
+    OpSign [ ctxt.EqSignIsUsed() ]         OperSign                        { UseOperSign(); }
+    MinSign [ ctxt.OperSignIsUsed()]         MinusSign                       {}
+    MinSign         OperSign                        { UseOperSign(); }
+    EOS [ctxt.OperSignIsUsed()]             Error   { Unacceptable(); }
+    EOS [ctxt.CheckNames()]  OK                     { Acceptable(); }
+
+}
+
+StrDig {
+    Digital [ctxt.isLess16()]          nil         { LengthInc(); }
+    Zero [ctxt.isLess16()]      nil         { LengthInc(); }
+    SpaceSym        Space       { LengthZero(); }
+    EOS [ctxt.CheckNames()]            OK       { Acceptable(); }
+}
+
+EqualSign {
+    SpaceSym        Space       { ClearOperSign(); }
+    EOS             Error       { Unacceptable(); }
+}
+
+StrLit {
+    Letter [ctxt.isLess16()]         nil            { LengthInc(); }
+    Digital [ctxt.isLess16()]        nil            { LengthInc(); }
+    Zero [ctxt.isLess16()]           nil            { LengthInc(); }
+    EOS [ctxt.isCounterMoreOne() and ctxt.CheckNames()]            OK           { Acceptable(); }
+    SpaceSym        Space                           { LengthZero(); }
+}
+
+OperSign {
+    SpaceSym        Space       { ClearOperSign(); }
+    EOS             Error       { Unacceptable(); }
+}
+
+MinusSign {
+    Digital     StrDig          { LengthInc(); }
+    Letter      StrLit          { LengthInc(); }
+    SpaceSym    Error           { Unacceptable(); }
+    EOS         Error           { Unacceptable(); }
+}
+
+Error {
+    EOS         nil             { Unacceptable(); }
+}
+
+OK {
+    EOS         nil             { Acceptable(); }
+}
+%%
