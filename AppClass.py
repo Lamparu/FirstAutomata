@@ -76,6 +76,12 @@ class AppClass:
     def ClearLitstr(self):
         self._litstr = ''
 
+    def InsertValname(self, c):
+        self._valname += c
+
+    def InsertLitstr(self, c):
+        self._litstr += c
+
     def ClearSMC(self):
         self.CounterZero()
         self.LengthZero()

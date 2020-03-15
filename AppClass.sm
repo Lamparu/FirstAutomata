@@ -24,45 +24,52 @@ Start {
 
 Space {
     SpaceSym        Space                           {}
-    Letter          StrLit                          { CounterInc(); LengthInc();}
-    Digital         StrDig                          { LengthInc(); }
+    //Letter (ch: String) [ctxt.isCounterMoreOne()]         StrLit     { ClearLitstr(); InsertLitstr(ch); CounterInc(); LengthInc();}
+    //Letter (ch: String)         StrLit                          { InsertValname(ch); CounterInc(); LengthInc();}
+    Letter (ch: String)         StrLit              { ClearLitStr(); CounterInc(); LengthInc();}
+    //Letter       StrLit                          {  CounterInc(); LengthInc();}
+    Digital        StrDig                          { LengthInc(); }
     EqSign [ ctxt.EqSignIsNotUsed() ]         EqualSign                       { UseOperSign(); }
     OpSign [ ctxt.EqSignIsUsed() ]         OperSign                        { UseOperSign(); }
-    MinSign [ ctxt.OperSignIsUsed()]         MinusSign                       {}
+    MinSign [ ctxt.OperSignIsUsed() ]         MinusSign                       {}
     MinSign         OperSign                        { UseOperSign(); }
     EOS [ctxt.OperSignIsUsed()]             Error   { Unacceptable(); }
-    EOS [ctxt.CheckNames()]  OK                     { Acceptable(); }
+    EOS [ctxt.isCounterMoreOne() and ctxt.CheckNames()]  OK                     { Acceptable(); }
 
 }
 
 StrDig {
     Digital [ctxt.isLess16()]          nil         { LengthInc(); }
     Zero [ctxt.isLess16()]      nil         { LengthInc(); }
-    SpaceSym        Space       { LengthZero(); }
+    SpaceSym        Space       { ClearOperSign(); LengthZero(); }
     EOS [ctxt.CheckNames()]            OK       { Acceptable(); }
 }
 
 EqualSign {
-    SpaceSym        Space       { ClearOperSign(); }
+    SpaceSym        Space       { }
     EOS             Error       { Unacceptable(); }
 }
 
 StrLit {
-    Letter [ctxt.isLess16()]         nil            { LengthInc(); }
-    Digital [ctxt.isLess16()]        nil            { LengthInc(); }
-    Zero [ctxt.isLess16()]           nil            { LengthInc(); }
+    Letter (ch: String) [ctxt.isLess16() and ctxt.isCounterMoreOne()]         nil            { InsertLitstr(ch); LengthInc(); }
+    Digital (ch: String) [ctxt.isLess16() and ctxt.isCounterMoreOne()]        nil            { InsertLitstr(ch); LengthInc(); }
+    Letter (ch: String) [ctxt.isLess16()]         nil            { InsertValname(ch); LengthInc(); }
+    Digital (ch: String) [ctxt.isLess16()]        nil            { InsertValname(ch); LengthInc(); }
+    Zero (ch: String) [ctxt.isLess16() and ctxt.isCounterMoreOne()]           nil            { InsertLitstr(ch); LengthInc(); }
+    Zero (ch: String) [ctxt.isLess16()]           nil            { InsertValname(ch); LengthInc(); }
     EOS [ctxt.isCounterMoreOne() and ctxt.CheckNames()]            OK           { Acceptable(); }
-    SpaceSym        Space                           { LengthZero(); }
+    EOS             Error                           { Unacceptable(); }
+    SpaceSym        Space                           { ClearOperSign(); LengthZero(); }
 }
 
 OperSign {
-    SpaceSym        Space       { ClearOperSign(); }
+    SpaceSym        Space       { }
     EOS             Error       { Unacceptable(); }
 }
 
 MinusSign {
     Digital     StrDig          { LengthInc(); }
-    Letter      StrLit          { LengthInc(); }
+    Letter (ch: String)     StrLit          { ClearLitstr(); InsertLitstr(ch); LengthInc(); CounterInc(); }
     SpaceSym    Error           { Unacceptable(); }
     EOS         Error           { Unacceptable(); }
 }
