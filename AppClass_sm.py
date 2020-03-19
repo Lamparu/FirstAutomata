@@ -14,9 +14,6 @@ class AppClassState(statemap.State):
     def Exit(self, fsm):
         pass
 
-    def Digital(self, fsm):
-        self.Default(fsm)
-
     def Digital(self, fsm, ch):
         self.Default(fsm)
 
@@ -24,9 +21,6 @@ class AppClassState(statemap.State):
         self.Default(fsm)
 
     def EqSign(self, fsm):
-        self.Default(fsm)
-
-    def Letter(self, fsm):
         self.Default(fsm)
 
     def Letter(self, fsm, ch):
@@ -45,9 +39,6 @@ class AppClassState(statemap.State):
         self.Default(fsm)
 
     def Unknown(self, fsm):
-        self.Default(fsm)
-
-    def Zero(self, fsm):
         self.Default(fsm)
 
     def Zero(self, fsm, ch):
@@ -71,7 +62,7 @@ class MainMap_Default(AppClassState):
             fsm.getState().Entry(fsm)
 
 
-    def Letter(self, fsm):
+    def Letter(self, fsm, ch):
         ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
         fsm.clearState()
@@ -82,7 +73,7 @@ class MainMap_Default(AppClassState):
             fsm.getState().Entry(fsm)
 
 
-    def Zero(self, fsm):
+    def Zero(self, fsm, ch):
         ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
         fsm.clearState()
@@ -93,7 +84,7 @@ class MainMap_Default(AppClassState):
             fsm.getState().Entry(fsm)
 
 
-    def Digital(self, fsm):
+    def Digital(self, fsm, ch):
         ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
         fsm.clearState()
@@ -161,10 +152,15 @@ class MainMap_Default(AppClassState):
 
 class MainMap_Start(MainMap_Default):
 
-    def Digital(self, fsm):
+    def Digital(self, fsm, ch):
+        ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
-        fsm.setState(MainMap.StrDig)
-        fsm.getState().Entry(fsm)
+        fsm.clearState()
+        try:
+            ctxt.InsertDigstr(ch)
+        finally:
+            fsm.setState(MainMap.StrNum)
+            fsm.getState().Entry(fsm)
 
 
     def EOS(self, fsm):
@@ -186,17 +182,27 @@ class MainMap_Start(MainMap_Default):
 
 class MainMap_Space(MainMap_Default):
 
-    def Digital(self, fsm):
+    def Digital(self, fsm, ch):
         ctxt = fsm.getOwner()
-        fsm.getState().Exit(fsm)
-        fsm.clearState()
-        try:
-            ctxt.LengthInc()
-        finally:
-            fsm.setState(MainMap.StrDig)
-            fsm.getState().Entry(fsm)
-
-
+        if ctxt.EqSignIsUsed() and ctxt.isCountTermsOne() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.LengthInc()
+            finally:
+                fsm.setState(MainMap.StrDig)
+                fsm.getState().Entry(fsm)
+        elif ctxt.OperSignIsUsed() and ctxt.isCountTermsMoreOne() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.LengthInc()
+            finally:
+                fsm.setState(MainMap.StrDig)
+                fsm.getState().Entry(fsm)
+        else:
+            MainMap_Default.Digital(self, fsm, ch)
+        
     def EOS(self, fsm):
         ctxt = fsm.getOwner()
         if ctxt.OperSignIsUsed() :
@@ -207,7 +213,7 @@ class MainMap_Space(MainMap_Default):
             finally:
                 fsm.setState(MainMap.Error)
                 fsm.getState().Entry(fsm)
-        elif ctxt.isCounterMoreOne() and ctxt.CheckNames() :
+        elif ctxt.isCounterMoreOrOne() and ctxt.CheckNames() :
             fsm.getState().Exit(fsm)
             fsm.clearState()
             try:
@@ -224,7 +230,7 @@ class MainMap_Space(MainMap_Default):
             fsm.getState().Exit(fsm)
             fsm.clearState()
             try:
-                ctxt.UseOperSign()
+                ctxt.UseEqSign()
             finally:
                 fsm.setState(MainMap.EqualSign)
                 fsm.getState().Entry(fsm)
@@ -233,20 +239,41 @@ class MainMap_Space(MainMap_Default):
         
     def Letter(self, fsm, ch):
         ctxt = fsm.getOwner()
-        fsm.getState().Exit(fsm)
-        fsm.clearState()
-        try:
-            ctxt.ClearLitStr()
-            ctxt.CounterInc()
-            ctxt.LengthInc()
-        finally:
-            fsm.setState(MainMap.StrLit)
-            fsm.getState().Entry(fsm)
-
-
+        if ctxt.isCounterZero() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.InsertValname(ch)
+                ctxt.LengthInc()
+            finally:
+                fsm.setState(MainMap.StrLit)
+                fsm.getState().Entry(fsm)
+        elif ctxt.EqSignIsUsed() and ctxt.isCountTermsOne() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.ClearLitstr()
+                ctxt.InsertLitstr(ch)
+                ctxt.LengthInc()
+            finally:
+                fsm.setState(MainMap.StrLit)
+                fsm.getState().Entry(fsm)
+        elif ctxt.OperSignIsUsed() and ctxt.isCountTermsMoreOne() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.ClearLitstr()
+                ctxt.InsertLitstr(ch)
+                ctxt.LengthInc()
+            finally:
+                fsm.setState(MainMap.StrLit)
+                fsm.getState().Entry(fsm)
+        else:
+            MainMap_Default.Letter(self, fsm, ch)
+        
     def MinSign(self, fsm):
         ctxt = fsm.getOwner()
-        if  ctxt.OperSignIsUsed()  :
+        if  ctxt.OperSignIsUsed() or ctxt.isCountTermsOne()  :
             fsm.getState().Exit(fsm)
             # No actions.
             pass
@@ -283,7 +310,7 @@ class MainMap_Space(MainMap_Default):
 
 class MainMap_StrDig(MainMap_Default):
 
-    def Digital(self, fsm):
+    def Digital(self, fsm, ch):
         ctxt = fsm.getOwner()
         if ctxt.isLess16() :
             endState = fsm.getState()
@@ -293,7 +320,7 @@ class MainMap_StrDig(MainMap_Default):
             finally:
                 fsm.setState(endState)
         else:
-            MainMap_Default.Digital(self, fsm)
+            MainMap_Default.Digital(self, fsm, ch)
         
     def EOS(self, fsm):
         ctxt = fsm.getOwner()
@@ -302,12 +329,20 @@ class MainMap_StrDig(MainMap_Default):
             fsm.clearState()
             try:
                 ctxt.Acceptable()
+                ctxt.CountTermsInc()
             finally:
                 fsm.setState(MainMap.OK)
                 fsm.getState().Entry(fsm)
         else:
-            MainMap_Default.EOS(self, fsm)
-        
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.Unacceptable()
+            finally:
+                fsm.setState(MainMap.Error)
+                fsm.getState().Entry(fsm)
+
+
     def SpaceSym(self, fsm):
         ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
@@ -315,12 +350,13 @@ class MainMap_StrDig(MainMap_Default):
         try:
             ctxt.ClearOperSign()
             ctxt.LengthZero()
+            ctxt.CountTermsInc()
         finally:
             fsm.setState(MainMap.Space)
             fsm.getState().Entry(fsm)
 
 
-    def Zero(self, fsm):
+    def Zero(self, fsm, ch):
         ctxt = fsm.getOwner()
         if ctxt.isLess16() :
             endState = fsm.getState()
@@ -330,8 +366,47 @@ class MainMap_StrDig(MainMap_Default):
             finally:
                 fsm.setState(endState)
         else:
-            MainMap_Default.Zero(self, fsm)
+            MainMap_Default.Zero(self, fsm, ch)
         
+class MainMap_StrNum(MainMap_Default):
+
+    def Digital(self, fsm, ch):
+        ctxt = fsm.getOwner()
+        endState = fsm.getState()
+        fsm.clearState()
+        try:
+            ctxt.InsertDigstr(ch)
+        finally:
+            fsm.setState(endState)
+
+
+    def EOS(self, fsm):
+        ctxt = fsm.getOwner()
+        fsm.getState().Exit(fsm)
+        fsm.clearState()
+        try:
+            ctxt.Unacceptable()
+        finally:
+            fsm.setState(MainMap.Error)
+            fsm.getState().Entry(fsm)
+
+
+    def SpaceSym(self, fsm):
+        fsm.getState().Exit(fsm)
+        fsm.setState(MainMap.Space)
+        fsm.getState().Entry(fsm)
+
+
+    def Zero(self, fsm, ch):
+        ctxt = fsm.getOwner()
+        endState = fsm.getState()
+        fsm.clearState()
+        try:
+            ctxt.InsertDigstr(ch)
+        finally:
+            fsm.setState(endState)
+
+
 class MainMap_EqualSign(MainMap_Default):
 
     def EOS(self, fsm):
@@ -355,7 +430,7 @@ class MainMap_StrLit(MainMap_Default):
 
     def Digital(self, fsm, ch):
         ctxt = fsm.getOwner()
-        if ctxt.isLess16() and ctxt.isCounterMoreOne() :
+        if ctxt.isLess16() and ctxt.isCounterMoreOrOne() :
             endState = fsm.getState()
             fsm.clearState()
             try:
@@ -376,11 +451,13 @@ class MainMap_StrLit(MainMap_Default):
         
     def EOS(self, fsm):
         ctxt = fsm.getOwner()
-        if ctxt.isCounterMoreOne() and ctxt.CheckNames() :
+        if ctxt.isCounterMoreOrOne() and ctxt.CheckNames() :
             fsm.getState().Exit(fsm)
             fsm.clearState()
             try:
                 ctxt.Acceptable()
+                ctxt.CounterInc()
+                ctxt.CountTermsInc()
             finally:
                 fsm.setState(MainMap.OK)
                 fsm.getState().Entry(fsm)
@@ -396,7 +473,7 @@ class MainMap_StrLit(MainMap_Default):
 
     def Letter(self, fsm, ch):
         ctxt = fsm.getOwner()
-        if ctxt.isLess16() and ctxt.isCounterMoreOne() :
+        if ctxt.isLess16() and ctxt.isCounterMoreOrOne()  :
             endState = fsm.getState()
             fsm.clearState()
             try:
@@ -417,19 +494,23 @@ class MainMap_StrLit(MainMap_Default):
         
     def SpaceSym(self, fsm):
         ctxt = fsm.getOwner()
-        fsm.getState().Exit(fsm)
-        fsm.clearState()
-        try:
-            ctxt.ClearOperSign()
-            ctxt.LengthZero()
-        finally:
-            fsm.setState(MainMap.Space)
-            fsm.getState().Entry(fsm)
-
-
+        if ctxt.CheckNames() and ctxt.isLess16() :
+            fsm.getState().Exit(fsm)
+            fsm.clearState()
+            try:
+                ctxt.ClearOperSign()
+                ctxt.LengthZero()
+                ctxt.CounterInc()
+                ctxt.CountTermsInc()
+            finally:
+                fsm.setState(MainMap.Space)
+                fsm.getState().Entry(fsm)
+        else:
+            MainMap_Default.SpaceSym(self, fsm)
+        
     def Zero(self, fsm, ch):
         ctxt = fsm.getOwner()
-        if ctxt.isLess16() and ctxt.isCounterMoreOne() :
+        if ctxt.isLess16() and ctxt.isCounterMoreOrOne() :
             endState = fsm.getState()
             fsm.clearState()
             try:
@@ -469,7 +550,7 @@ class MainMap_OperSign(MainMap_Default):
 
 class MainMap_MinusSign(MainMap_Default):
 
-    def Digital(self, fsm):
+    def Digital(self, fsm, ch):
         ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
         fsm.clearState()
@@ -545,12 +626,13 @@ class MainMap(object):
     Start = MainMap_Start('MainMap.Start', 0)
     Space = MainMap_Space('MainMap.Space', 1)
     StrDig = MainMap_StrDig('MainMap.StrDig', 2)
-    EqualSign = MainMap_EqualSign('MainMap.EqualSign', 3)
-    StrLit = MainMap_StrLit('MainMap.StrLit', 4)
-    OperSign = MainMap_OperSign('MainMap.OperSign', 5)
-    MinusSign = MainMap_MinusSign('MainMap.MinusSign', 6)
-    Error = MainMap_Error('MainMap.Error', 7)
-    OK = MainMap_OK('MainMap.OK', 8)
+    StrNum = MainMap_StrNum('MainMap.StrNum', 3)
+    EqualSign = MainMap_EqualSign('MainMap.EqualSign', 4)
+    StrLit = MainMap_StrLit('MainMap.StrLit', 5)
+    OperSign = MainMap_OperSign('MainMap.OperSign', 6)
+    MinusSign = MainMap_MinusSign('MainMap.MinusSign', 7)
+    Error = MainMap_Error('MainMap.Error', 8)
+    OK = MainMap_OK('MainMap.OK', 9)
     Default = MainMap_Default('MainMap.Default', -1)
 
 class AppClass_sm(statemap.FSMContext):

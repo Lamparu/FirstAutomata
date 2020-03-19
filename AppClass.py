@@ -8,12 +8,20 @@ class AppClass:
         self._fsm.enterStartState()
         self._valname = ''
         self._litstr = ''
+        self._digstr = ''
         self._counter = 0
+        self._countTerms = 0
         self._length = 0
         self._OperSign = False
         self._equal = False
         # Uncomment to see debug output.
-        self._fsm.setDebugFlag(True)
+        # self._fsm.setDebugFlag(True)
+
+    def GetCounter(self):
+        return self._counter
+
+    def GetStrNum(self):
+        return self._digstr
 
     def Acceptable(self):
         self._is_acceptable = True
@@ -25,11 +33,11 @@ class AppClass:
         self._fsm.Start()
         for c in string:
             if c == '0':
-                self._fsm.Zero()
-            if c.isalpha():
-                self._fsm.Letter()
+                self._fsm.Zero(c)
+            elif c.isalpha():
+                self._fsm.Letter(c)
             elif c.isdigit():
-                self._fsm.Digital()
+                self._fsm.Digital(c)    # TODO: проверить сгенерированный файл с результатом, второе слагаемое плохо читается
             elif c == '=':
                 self._fsm.EqSign()
             elif c == '-':
@@ -70,11 +78,20 @@ class AppClass:
     def CounterZero(self):
         self._counter = 0
 
+    def CountTermsInc(self):
+        self._countTerms += 1
+
+    def CountTermsZero(self):
+        self._countTerms = 0
+
     def ClearValname(self):
         self._valname = ''
 
     def ClearLitstr(self):
         self._litstr = ''
+
+    def ClearDigstr(self):
+        self._digstr = ''
 
     def InsertValname(self, c):
         self._valname += c
@@ -82,17 +99,22 @@ class AppClass:
     def InsertLitstr(self, c):
         self._litstr += c
 
+    def InsertDigstr(self, c):
+        self._digstr += c
+
     def ClearSMC(self):
         self.CounterZero()
         self.LengthZero()
+        self.CountTermsZero()
         self._is_acceptable = True
         self.ClearValname()
         self.ClearLitstr()
+        self.ClearDigstr()
         self.ClearEqSign()
         self.ClearOperSign()
 
     def isLess16(self):
-        return self._counter <= 16
+        return self._length <= 16
 
     def CheckNames(self):
         if self._litstr != '':
@@ -100,8 +122,23 @@ class AppClass:
         else:
             return True
 
-    def isCounterMoreOne(self):
-        return self._counter > 1
+    #def isCounterMoreOne(self):
+     #   return self._counter > 1
+
+    def isCounterOne(self):
+        return self._counter == 1
+
+    def isCounterZero(self):
+        return self._counter == 0
+
+    def isCounterMoreOrOne(self):
+        return self._counter >= 1
+
+    def isCountTermsOne(self):
+        return self._countTerms == 1
+
+    def isCountTermsMoreOne(self):
+        return self._countTerms > 1
 
     def EqSignIsNotUsed(self):
         return not self._equal
@@ -111,3 +148,9 @@ class AppClass:
 
     def OperSignIsUsed(self):
         return self._OperSign
+
+    def StrNumIsValid(self):
+        if self._digstr != '':
+            return True
+        else:
+            return False

@@ -14,11 +14,9 @@ def checkFILE():
         match = re.fullmatch(refer, line.rstrip())
         gr = re.split(spref, line.rstrip())
         if match:
-            # print(match)
+            # print(gr)
             if match.group('lit1'):
-                if match.group('valname') == match.group('lit1'):
-                    res += 1
-                else:
+                if match.group('valname') != match.group('lit1'):
                     continue
             for ind in gr[1:]:
                 if match.group('valname') == ind:
