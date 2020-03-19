@@ -5,64 +5,64 @@
 %map MainMap
 %%
 Default {
-    Start           Start       { ClearSMC(); }
+    Start                       Start       { ClearSMC(); }
     Letter (ch: String)         Error       { Unacceptable(); }
     Zero (ch: String)           Error       { Unacceptable(); }
     Digital (ch: String)        Error       { Unacceptable(); }
-    EqSign          Error       { Unacceptable(); }
-    OpSign          Error       { Unacceptable(); }
-    MinSign         Error       { Unacceptable(); }
-    Unknown         Error       { Unacceptable(); }
-    SpaceSym        Error       { Unacceptable(); }
+    EqSign                      Error       { Unacceptable(); }
+    OpSign                      Error       { Unacceptable(); }
+    MinSign                     Error       { Unacceptable(); }
+    Unknown                     Error       { Unacceptable(); }
+    SpaceSym                    Error       { Unacceptable(); }
 }
 
 Start {
-    Digital (ch: String)         StrNum        { InsertDigstr(ch); }
-    SpaceSym        Start         {}
-    EOS             Error         { Unacceptable(); }
+    Digital (ch: String)        StrNum        { InsertDigstr(ch); }
+    SpaceSym                    Start         {}
+    EOS                         Error         { Unacceptable(); }
 }
 
 Space {
-    SpaceSym        Space                           {}
-    Letter (ch: String) [ctxt.isCounterZero()]        StrLit                          { InsertValname(ch); LengthInc();  }
-    Letter (ch:String) [ctxt.EqSignIsUsed() and ctxt.isCountTermsOne()]    StrLit      { ClearLitstr(); InsertLitstr(ch); LengthInc();  }
-    Letter (ch:String) [ctxt.OperSignIsUsed() and ctxt.isCountTermsMoreOne()]    StrLit      { ClearLitstr(); InsertLitstr(ch); LengthInc(); }
-    Digital (ch: String) [ctxt.EqSignIsUsed() and ctxt.isCountTermsOne()]       StrDig                      { LengthInc(); }
-    Digital (ch: String) [ctxt.OperSignIsUsed() and ctxt.isCountTermsMoreOne()]       StrDig                      { LengthInc();  }
-    EqSign [ ctxt.EqSignIsNotUsed() ]         EqualSign                       { UseEqSign(); }
-    OpSign [ ctxt.EqSignIsUsed() ]         OperSign                        { UseOperSign(); }
-    MinSign [ ctxt.OperSignIsUsed() or ctxt.isCountTermsOne() ]         MinusSign                       {}
-    MinSign         OperSign                        { UseOperSign(); }
-    EOS [ctxt.OperSignIsUsed()]             Error   { Unacceptable(); }
-    EOS [ctxt.isCounterMoreOrOne() and ctxt.CheckNames()]  OK                     { Acceptable(); }
+    SpaceSym                                                                           Space       {}
+    Letter  (ch: String)    [ctxt.isCounterZero()]                                     StrLit      { InsertValname(ch); LengthInc();  }
+    Letter  (ch:String)     [ctxt.EqSignIsUsed() and ctxt.isCountTermsOne()]           StrLit      { ClearLitstr(); InsertLitstr(ch); LengthInc();  }
+    Letter  (ch:String)     [ctxt.OperSignIsUsed() and ctxt.isCountTermsMoreOne()]     StrLit      { ClearLitstr(); InsertLitstr(ch); LengthInc(); }
+    Digital (ch: String)    [ctxt.EqSignIsUsed() and ctxt.isCountTermsOne()]           StrDig      { LengthInc(); }
+    Digital (ch: String)    [ctxt.OperSignIsUsed() and ctxt.isCountTermsMoreOne()]     StrDig      { LengthInc();  }
+    EqSign                  [ ctxt.EqSignIsNotUsed() ]                                 EqualSign   { UseEqSign(); }
+    OpSign                  [ ctxt.EqSignIsUsed() ]                                    OperSign    { UseOperSign(); }
+    MinSign                 [ ctxt.OperSignIsUsed() or ctxt.isCountTermsOne() ]        MinusSign   {}
+    MinSign                                                                            OperSign    { UseOperSign(); }
+    EOS                     [ctxt.OperSignIsUsed()]                                    Error       { Unacceptable(); }
+    EOS                     [ctxt.isCounterMoreOrOne() and ctxt.CheckNames()]          OK          { Acceptable(); }
 
 }
 
 StrDig {
-    Digital (ch: String) [ctxt.isLess16()]          nil         { LengthInc(); }
-    Zero (ch: String) [ctxt.isLess16()]      nil         { LengthInc(); }
-    SpaceSym        Space       { ClearOperSign(); LengthZero(); CountTermsInc();  }
-    EOS [ctxt.CheckNames()]            OK       { Acceptable(); CountTermsInc(); }
-    EOS         Error       { Unacceptable(); }
+    Digital     (ch: String)    [ctxt.isLess16()]       nil         { LengthInc(); }
+    Zero        (ch: String)    [ctxt.isLess16()]       nil         { LengthInc(); }
+    SpaceSym                                            Space       { ClearOperSign(); LengthZero(); CountTermsInc(); }
+    EOS                         [ctxt.CheckNames()]     OK          { Acceptable(); CountTermsInc(); }
+    EOS                                                 Error       { Unacceptable(); }
 }
 
 StrNum {
     Digital (ch: String)        nil         { InsertDigstr(ch); }
-    Zero (ch: String)           nil         { InsertDigstr(ch); }
+    Zero    (ch: String)        nil         { InsertDigstr(ch); }
     SpaceSym                    Space       {}
     EOS                         Error       {Unacceptable(); }
 }
 
 StrLit {
-    Letter (ch: String) [ctxt.isLess16() and ctxt.isCounterMoreOrOne() ]         nil            { InsertLitstr(ch); LengthInc(); }
-    Digital (ch: String) [ctxt.isLess16() and ctxt.isCounterMoreOrOne()]        nil            { InsertLitstr(ch); LengthInc(); }
-    Letter (ch: String) [ctxt.isLess16()]         nil            { InsertValname(ch); LengthInc(); }
-    Digital (ch: String) [ctxt.isLess16()]        nil            { InsertValname(ch); LengthInc(); }
-    Zero (ch: String) [ctxt.isLess16() and ctxt.isCounterMoreOrOne()]           nil            { InsertLitstr(ch); LengthInc(); }
-    Zero (ch: String) [ctxt.isLess16()]           nil            { InsertValname(ch); LengthInc(); }
-    EOS [ctxt.isCounterMoreOrOne() and ctxt.CheckNames()]            OK           { Acceptable(); CounterInc(); CountTermsInc();}
-    EOS             Error                           { Unacceptable(); }
-    SpaceSym  [ctxt.CheckNames() and ctxt.isLess16()]       Space                           { ClearOperSign(); LengthZero(); CounterInc(); CountTermsInc();}
+    Letter  (ch: String)    [ctxt.isLess16() and ctxt.isCounterMoreOrOne()]     nil            { InsertLitstr(ch); LengthInc(); }
+    Digital (ch: String)    [ctxt.isLess16() and ctxt.isCounterMoreOrOne()]     nil            { InsertLitstr(ch); LengthInc(); }
+    Letter  (ch: String)    [ctxt.isLess16()]                                   nil            { InsertValname(ch); LengthInc(); }
+    Digital (ch: String)    [ctxt.isLess16()]                                   nil            { InsertValname(ch); LengthInc(); }
+    Zero    (ch: String)    [ctxt.isLess16() and ctxt.isCounterMoreOrOne()]     nil            { InsertLitstr(ch); LengthInc(); }
+    Zero    (ch: String)    [ctxt.isLess16()]                                   nil            { InsertValname(ch); LengthInc(); }
+    EOS                     [ctxt.isCounterMoreOrOne() and ctxt.CheckNames()]   OK             { Acceptable(); CounterInc(); CountTermsInc();}
+    EOS                                                                         Error          { Unacceptable(); }
+    SpaceSym                [ctxt.CheckNames() and ctxt.isLess16()]             Space          { ClearOperSign(); LengthZero(); CounterInc(); CountTermsInc();}
 }
 
 EqualSign {
@@ -77,9 +77,9 @@ OperSign {
 
 MinusSign {
     Digital (ch: String)     StrDig          { LengthInc(); }
-    Letter (ch: String)     StrLit          { ClearLitstr(); InsertLitstr(ch); LengthInc(); CounterInc(); }
-    SpaceSym    Error           { Unacceptable(); }
-    EOS         Error           { Unacceptable(); }
+    Letter  (ch: String)     StrLit          { ClearLitstr(); InsertLitstr(ch); LengthInc(); CounterInc(); }
+    SpaceSym                 Error           { Unacceptable(); }
+    EOS                      Error           { Unacceptable(); }
 }
 
 Error {
