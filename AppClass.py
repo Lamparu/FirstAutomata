@@ -32,6 +32,8 @@ class AppClass:
     def CheckString(self, string):
         self._fsm.Start()
         for c in string:
+            if not self._is_acceptable:
+                break
             if c == '0':
                 self._fsm.Zero(c)
             elif c.isalpha():

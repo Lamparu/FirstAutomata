@@ -2,7 +2,7 @@ import ply.lex as lex
 import re
 
 tokens = (
-    'NUM', 'LITSTR', 'TAILLITSTR', 'DIGSTR', 'SPACE', 'EQSIGN', 'OPERSIGN'
+    'NUM', 'LITSTR', 'TAILLITSTR', 'DIGSTR', 'EQSIGN', 'OPERSIGN'#, 'SPACE'
 )
 
 states = (
@@ -10,8 +10,8 @@ states = (
     ('tail', 'exclusive'),
 )
 
-t_ANY_SPACE = r' +'  # TODO: мб стоит еще добавить табуляцию
-t_tail_OPERSIGN = r'(\+|\-|\*|\/)'
+# t_ANY_SPACE = r' +'  # TODO: мб стоит еще добавить табуляцию
+t_tail_OPERSIGN = r' +(\+|\-|\*|\/) +'
 t_tail_TAILLITSTR = r'\-?[a-zA-Z][a-zA-Z0-9]{0,15}'
 t_tail_DIGSTR = r'\-?[1-9][0-9]{0,15}'
 t_valname_LITSTR = r'[a-zA-Z][a-zA-Z0-9]{0,15}'
@@ -22,15 +22,22 @@ t_valname_ignore = ''
 t_tail_ignore = ''
 t_ignore = ''
 
+
+#def t_ANY_UNKNOWN(t):
+#    r'.'
+#    t.lexer.begin('INITIAL')
+#    return t
+
+
 def t_NUM(t):
-    r'[1-9][0-9]*'
+    r' *[1-9][0-9]* +'
     if t.lexer.current_state() == 'INITIAL':
         t.lexer.begin('valname')
     return t
 
 
 def t_ANY_EQSIGN(t):
-    r'\='
+    r' +\= +'
     if t.lexer.current_state() == 'valname':
         t.lexer.begin('tail')
     else:
@@ -45,7 +52,7 @@ def t_ANY_EQSIGN(t):
 
 
 def t_tail_newline(t):
-    r'\n+'
+    r' *\n+'
     t.lexer.lineno += len(t.value)
     t.lexer.begin('INITIAL')
 
@@ -71,11 +78,7 @@ def t_tail_error(t):
 
 lexer = lex.lex(reflags=re.UNICODE | re.DOTALL)
 
-data = '''2 a = a - -4
-3 d = -d
-456 b4ff = 3
--5 a = a
-6 7 = a'''
+data = '''2 arg = 3'''
 
 lexer.input(data)
 
