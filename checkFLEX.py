@@ -24,6 +24,9 @@ class LexerClass:
     def __init__(self):
         self.lexer = lex.lex(module=self)
 
+    def input(self, smth):
+        return self.lexer.input(smth)
+
     def token(self):
         return self.lexer.token()
 
@@ -48,25 +51,33 @@ class LexerClass:
         return t
 
     def t_ANY(self, t):
-        r'.'
+        r'.+'
         t.lexer.begin('INITIAL')
         return t
 
     # Обработка ошибок
     def t_error(self, t):
-        print("Illegal character '%s' " % t.value[0])
+        #print("Illegal character '%s' " % t.value[0])
         t.lexer.skip(1)
         t.lexer.begin('INITIAL')
 
     def t_valname_error(self, t):
-        print("Illegal character '%s' in VALNAME " % t.value[0])
+        #print("Illegal character '%s' in VALNAME " % t.value[0])
         t.lexer.skip(1)
         t.lexer.begin('INITIAL')
 
     def t_tail_error(self, t):
-        print("Illegal character '%s' in TAIL " % t.value[0])
+        #print("Illegal character '%s' in TAIL " % t.value[0])
         t.lexer.skip(1)
         t.lexer.begin('INITIAL')
 
 
 #l = LexerClass()
+#data = '''2 a = a + 3-4
+#'''
+#l.input(data)
+#while True:
+#    tok = l.token()
+#    if not tok:
+#        break
+#    print(tok)

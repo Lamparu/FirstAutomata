@@ -5,6 +5,9 @@ from checkREG import readTimeFileREG
 from checkSMC import SMCcheck
 from checkSMC import readTimeFileSMC
 from checkSMC import checkSMCstr
+from PLYmain import PLYcheck
+from PLYmain import checkPLYstr
+from PLYmain import readTimeFilePLY
 
 ch = 1
 while int(ch) != 0:
@@ -12,7 +15,8 @@ while int(ch) != 0:
     print('2. Write string from keyboard')
     print('3. Check file with RegEx')
     print('4. Check file with SMC')
-    print('5. Show statistics')
+    print('5. Check file with PLY')
+    print('6. Show statistics')
     print('Choose option: ')
     ch = input()
     if ch.isdigit():
@@ -23,13 +27,17 @@ while int(ch) != 0:
             strcheck = input()
             print('RegEx: ' + checkREGstr(strcheck))
             print('SMC: ' + checkSMCstr(strcheck))
+            print('PLY: ' + checkPLYstr(strcheck))
         elif int(ch) == 3:
             checkFILE()
         elif int(ch) == 4:
             SMCcheck()
         elif int(ch) == 5:
+            PLYcheck()
+        elif int(ch) == 6:
             readTimeFileREG()
             readTimeFileSMC()
+            readTimeFilePLY()
         elif int(ch) == 0:
             break
         else:

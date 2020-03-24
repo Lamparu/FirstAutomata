@@ -45,8 +45,8 @@ def checkREGstr(strch):
     match = re.fullmatch(refer, strch.rstrip())
     gr = re.split(spref, strch.rstrip())
     if match:
-        print(match)
-        print(gr)
+        #print(match)
+        #print(gr)
         if match.group('lit1'):
             if match.group('valname') != match.group('lit1'):
                 return 'Unacceptable'
@@ -54,7 +54,7 @@ def checkREGstr(strch):
             if match.group('valname') == ind:
                 res += 1
             else:
-                continue
+                return 'Unacceptable'
         return match.group('strnum') + ': ' + str(res)
     else:
         return 'Unacceptable'
