@@ -1,96 +1,72 @@
 import ply.lex as lex
 import re
 
-tokens = (
-    'NUM', 'LITSTR', 'TAILLITSTR', 'DIGSTR', 'EQSIGN', 'OPERSIGN', 'NL', 'ANY'
-)
 
-states = (
-    ('valname', 'exclusive'),
-    ('tail', 'exclusive'),
-)
+class LexerClass:
+    tokens = (
+        'NUM', 'LITSTR', 'TAILLITSTR', 'DIGSTR', 'EQSIGN', 'OPERSIGN', 'NL', 'ANY'
+    )
 
-# t_ANY_SPACE = r' +'  # TODO: мб стоит еще добавить табуляцию
-t_tail_OPERSIGN = r' +[\+|\-|\*|\/] +'
-t_tail_TAILLITSTR = r'\-?[a-zA-Z][a-zA-Z0-9]{0,15}'
-t_tail_DIGSTR = r'\-?[1-9][0-9]{0,15}'
-t_valname_LITSTR = r'[a-zA-Z][a-zA-Z0-9]{0,15}'
+    states = (
+        ('valname', 'exclusive'),
+        ('tail', 'exclusive'),
+    )
 
-# t_tail_AFTEREQ = r' +\-?(([a-zA-Z][a-zA-Z0-9]{0,15})|[1-9][0-9]*)?( +(\+|\-|\*|\/) +\-?(([a-zA-Z][a-zA-Z0-9]{0,15})|[1-9][0-9]*))* *'
+    t_tail_OPERSIGN = r'[ ]+[\+|\-|\*|\/][ ]+'
+    t_tail_TAILLITSTR = r'\-?[a-zA-Z][a-zA-Z0-9]{0,15}'
+    t_tail_DIGSTR = r'\-?[1-9][0-9]{0,15}'
+    t_valname_LITSTR = r'[a-zA-Z][a-zA-Z0-9]{0,15}'
 
-t_valname_ignore = ''
-t_tail_ignore = ''
-t_ignore = ''
+    t_valname_ignore = ''
+    t_tail_ignore = ''
+    t_ignore = ''
 
+    def __init__(self):
+        self.lexer = lex.lex(module=self)
 
-#def t_valname_tail_UNKNOWN(t):
-#    r'.'
-#    t.lexer.begin('INITIAL')
-#    return t
+    def token(self):
+        return self.lexer.token()
 
-
-def t_ANY_NL(t):
-    r' *\n+'
-    t.lexer.lineno += len(t.value)
-    t.lexer.begin('INITIAL')
-    return t
-
-
-def t_NUM(t):
-    r' *[1-9][0-9]* +'
-    if t.lexer.current_state() == 'INITIAL':
-        t.lexer.begin('valname')
-    return t
-
-
-def t_ANY_EQSIGN(t):
-    r' +\= +'
-    if t.lexer.current_state() == 'valname':
-        t.lexer.begin('tail')
-    else:
+    def t_ANY_NL(self, t):
+        r'[ ]*\n'
+        t.lexer.lineno += len(t.value)
         t.lexer.begin('INITIAL')
-    return t
+        return t
+
+    def t_NUM(self, t):
+        r'[ ]*[1-9][0-9]*[ ]+'
+        if t.lexer.current_state() == 'INITIAL':
+            t.lexer.begin('valname')
+        return t
+
+    def t_ANY_EQSIGN(self, t):
+        r'[ ]+\=[ ]+'
+        if t.lexer.current_state() == 'valname':
+            t.lexer.begin('tail')
+        else:
+            t.lexer.begin('INITIAL')
+        return t
+
+    def t_ANY(self, t):
+        r'.'
+        t.lexer.begin('INITIAL')
+        return t
+
+    # Обработка ошибок
+    def t_error(self, t):
+        print("Illegal character '%s' " % t.value[0])
+        t.lexer.skip(1)
+        t.lexer.begin('INITIAL')
+
+    def t_valname_error(self, t):
+        print("Illegal character '%s' in VALNAME " % t.value[0])
+        t.lexer.skip(1)
+        t.lexer.begin('INITIAL')
+
+    def t_tail_error(self, t):
+        print("Illegal character '%s' in TAIL " % t.value[0])
+        t.lexer.skip(1)
+        t.lexer.begin('INITIAL')
 
 
-def t_ANY(t):
-    r'.'
-    t.lexer.begin('INITIAL')
-    return t
-
-
-#def t_tail_newline(t):
-#    r' *\n+'
-#    t.lexer.lineno += len(t.value)
-#    t.lexer.begin('INITIAL')
-
-
-# Обработка ошибок
-def t_error(t):
-    print("Illegal character '%s' " % t.value[0])
-    t.lexer.skip(1)
-    t.lexer.begin('INITIAL')
-
-
-def t_valname_error(t):
-    print("Illegal character '%s' in VALNAME " % t.value[0])
-    t.lexer.skip(1)
-    t.lexer.begin('INITIAL')
-
-
-def t_tail_error(t):
-    print("Illegal character '%s' in TAIL " % t.value[0])
-    t.lexer.skip(1)
-    t.lexer.begin('INITIAL')
-
-
-lexer = lex.lex(reflags=re.UNICODE | re.DOTALL)
-
-data = '123 arg = 3\n'
-
-#lexer.input(data)
-
-#while True:
-#    tok = lexer.token()
-#    if not tok:
-#        break
-#    print(tok)
+#l = LexerClass()
