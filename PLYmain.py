@@ -10,7 +10,7 @@ def readTimeFilePLY():
 
 def checkPLYstr(st):
     parser = ParserClass()
-    parser.checkString(st)
+    parser.checkString(st + '\n')
     if len(parser.dictstr) == 1 and parser.flag:
         return parser.strnum + ' : ' + str(parser.dictstr.popitem()[1]) + '\n'
     else:
