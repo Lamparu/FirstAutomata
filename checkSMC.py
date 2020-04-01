@@ -13,7 +13,7 @@ def checkSMCstr(strch):
     match = machine.CheckString(strch)
     # return machine.Acceptable()
     if match:
-        return machine.GetStrNum() + ': ' + str(machine.GetCounter())
+        return machine.GetStrNum() + ': ' + str(machine.getNumLitstr())
     else:
         return 'Unacceptable'
 
@@ -23,13 +23,17 @@ def SMCcheck():
     f = open('genSTR.txt', 'r')
     res = open('resSMC.txt', 'w')
     ftime = open('timeSMC.txt', 'w')
-    start_time = time.perf_counter()
+    time_start = time.perf_counter()
+    numline = 0
     for line in f.readlines():
+        numline += 1
         match = machine.CheckString(line)
         if match:
-            res.write(machine.GetStrNum() + ': ' + str(machine.GetCounter()) + '\n')
-    end_time = time.perf_counter()
-    ftime.write(str(end_time - start_time))
+            # print(machine.GetStrNum() + ': ' + str(machine.getNumLitstr()))
+            res.write(str(machine.GetStrNum()) + ' : ' + str(machine.getNumLitstr()) + '\n')
+        if numline % 10000 == 0:
+            ftime.write(str(time.perf_counter() - time_start) + '\n')
+    print('***File was checked by SMC***')
     ftime.close()
     f.close()
     res.close()

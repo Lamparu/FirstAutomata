@@ -6,19 +6,24 @@ class AppClass:
         self._fsm = AppClass_sm.AppClass_sm(self)
         self._is_acceptable = False
         self._fsm.enterStartState()
-        self._valname = ''
-        self._litstr = ''
-        self._digstr = ''
-        self._counter = 0
-        self._countTerms = 0
+        self._valname = ''  # имя переменной
+        self._litstr = ''  # буквенный литерал после =
+        self._digstr = ''  # номер строки
+        self._counter = 0  # Количество буквенных слов вместе с valname
+        self._countTerms = 0  # Колчество литералов после знака =
         self._length = 0
         self._OperSign = False
         self._equal = False
+        self._val_dict = {}
+        self.res = 0
         # Uncomment to see debug output.
         # self._fsm.setDebugFlag(True)
 
-    def GetCounter(self):
-        return self._counter
+    def getNumLitstr(self):
+        for val in self._val_dict:
+            if self._val_dict[val] == self._digstr:
+                self.res += 1
+        return self.res
 
     def GetStrNum(self):
         return self._digstr
@@ -39,7 +44,7 @@ class AppClass:
             elif c.isalpha():
                 self._fsm.Letter(c)
             elif c.isdigit():
-                self._fsm.Digital(c)    # TODO: проверить сгенерированный файл с результатом, второе слагаемое плохо читается
+                self._fsm.Digital(c)
             elif c == '=':
                 self._fsm.EqSign()
             elif c == '-':
@@ -49,7 +54,7 @@ class AppClass:
             elif c == '*' or c == '/' or c == '+':
                 self._fsm.OpSign()
             elif c == '\n':
-                self._fsm.EOS()  # TODO: написать это отдельно через EndLine
+                self._fsm.EOS()
                 break
             else:
                 self._fsm.Unknown()
@@ -95,6 +100,9 @@ class AppClass:
     def ClearDigstr(self):
         self._digstr = ''
 
+    def ClearRes(self):
+        self.res = 0
+
     def InsertValname(self, c):
         self._valname += c
 
@@ -103,6 +111,9 @@ class AppClass:
 
     def InsertDigstr(self, c):
         self._digstr += c
+
+    def InsertValnameinDict(self):
+        self._val_dict[self._valname] = self._digstr
 
     def ClearSMC(self):
         self.CounterZero()
@@ -114,18 +125,19 @@ class AppClass:
         self.ClearDigstr()
         self.ClearEqSign()
         self.ClearOperSign()
+        self.ClearRes()
 
     def isLess16(self):
         return self._length <= 16
 
     def CheckNames(self):
-        if self._litstr != '':
-            return self._valname == self._litstr
-        else:
+        if self._litstr == '':
             return True
-
-    #def isCounterMoreOne(self):
-     #   return self._counter > 1
+        if self._val_dict.get(self._litstr) is None:
+            return False
+        else:
+            self._val_dict[self._litstr] = self._digstr
+            return True
 
     def isCounterOne(self):
         return self._counter == 1

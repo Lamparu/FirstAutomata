@@ -573,19 +573,6 @@ class MainMap_MinusSign(MainMap_Default):
             fsm.getState().Entry(fsm)
 
 
-    def Letter(self, fsm, ch):
-        ctxt = fsm.getOwner()
-        fsm.getState().Exit(fsm)
-        fsm.clearState()
-        try:
-            ctxt.ClearLitstr()
-            ctxt.InsertLitstr(ch)
-            ctxt.LengthInc()
-        finally:
-            fsm.setState(MainMap.StrLit)
-            fsm.getState().Entry(fsm)
-
-
     def SpaceSym(self, fsm):
         ctxt = fsm.getOwner()
         fsm.getState().Exit(fsm)
@@ -617,6 +604,7 @@ class MainMap_OK(MainMap_Default):
         fsm.clearState()
         try:
             ctxt.Acceptable()
+            ctxt.InsertValnameinDict()
         finally:
             fsm.setState(endState)
 
