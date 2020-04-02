@@ -8,11 +8,13 @@ def readTimeFilePLY():
     f.close()
 
 
-def checkPLYstr(st):
+def checkPLYstr(st, dict_valnames):
     parser = ParserClass()
+    for ind in dict_valnames:
+        parser.dictstr[ind] = 0
     parser.checkString(st + '\n')
-    if len(parser.dictstr) == 1 and parser.flag:
-        return parser.strnum + ' : ' + str(parser.dictstr.popitem()[1]) + '\n'
+    if parser.in_dict and parser.flag:
+        return parser.strnum + ' : ' + str(len(parser.val_instr))
     else:
         return 'Unacceptable'
 

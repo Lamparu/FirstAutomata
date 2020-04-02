@@ -34,16 +34,16 @@ Space {
     OpSign                  [ctxt.EqSignIsUsed()]                                      OperSign    { UseOperSign(); }
     MinSign                 [ctxt.OperSignIsUsed() or ctxt.isCountTermsOne() and ctxt.EqSignIsUsed()]          MinusSign   {}
     MinSign                 [ctxt.EqSignIsUsed()]                                      OperSign    { UseOperSign(); }
-    EOS                     [ctxt.isCounterMoreOrOne()]                                OK          { Acceptable(); }
+    EOS                     [ctxt.isCounterMoreOrOne()]                                OK          { Acceptable(); InsertValnameinDict();}
 
 }
 
 StrDig {
-    EOS                                                 Error       { Unacceptable(); }
-    Digital     (ch: String)    [ctxt.isLess16()]       nil         { LengthInc(); }
-    Zero        (ch: String)    [ctxt.isLess16()]       nil         { LengthInc(); }
-    SpaceSym                                            Space       { ClearOperSign(); LengthZero(); CountTermsInc(); }
-    EOS                                                 OK          { Acceptable(); CountTermsInc(); }
+    EOS                                                                     Error       { Unacceptable(); }
+    Digital     (ch: String)    [ctxt.isLess16()]                           nil         { LengthInc(); }
+    Zero        (ch: String)    [ctxt.isLess16()]                           nil         { LengthInc(); }
+    SpaceSym                                                                Space       { ClearOperSign(); LengthZero(); CountTermsInc(); }
+    EOS                         [ctxt.CheckNames() and ctxt.isLess16()]     OK          { Acceptable(); CountTermsInc(); InsertValnameinDict();}
 }
 
 StrNum {
@@ -61,7 +61,7 @@ StrLit {
     Digital (ch: String)    [ctxt.isLess16()]                                   nil            { InsertValname(ch); LengthInc(); }
     Zero    (ch: String)    [ctxt.isLess16() and ctxt.isCounterMoreOrOne()]     nil            { InsertLitstr(ch); LengthInc(); }
     Zero    (ch: String)    [ctxt.isLess16()]                                   nil            { InsertValname(ch); LengthInc(); }
-    EOS                     [ctxt.isCounterMoreOrOne() and ctxt.CheckNames()]   OK             { Acceptable(); CounterInc(); CountTermsInc();}
+    EOS                     [ctxt.isCounterMoreOrOne() and ctxt.CheckNames()]   OK             { Acceptable(); CounterInc(); CountTermsInc(); InsertValnameinDict();}
     SpaceSym                [ctxt.CheckNames() and ctxt.isLess16()]             Space          { ClearOperSign(); LengthZero(); CounterInc(); CountTermsInc();}
 }
 
@@ -86,6 +86,6 @@ Error {
 }
 
 OK {
-    EOS         nil             { Acceptable(); InsertValnameinDict(); }
+    EOS         nil             { Acceptable(); }
 }
 %%

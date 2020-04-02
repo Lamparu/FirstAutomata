@@ -213,11 +213,12 @@ class MainMap_Space(MainMap_Default):
             finally:
                 fsm.setState(MainMap.Error)
                 fsm.getState().Entry(fsm)
-        elif ctxt.isCounterMoreOrOne() and ctxt.CheckNames() :
+        elif ctxt.isCounterMoreOrOne() :
             fsm.getState().Exit(fsm)
             fsm.clearState()
             try:
                 ctxt.Acceptable()
+                ctxt.InsertValnameinDict()
             finally:
                 fsm.setState(MainMap.OK)
                 fsm.getState().Entry(fsm)
@@ -325,12 +326,13 @@ class MainMap_StrDig(MainMap_Default):
         
     def EOS(self, fsm):
         ctxt = fsm.getOwner()
-        if ctxt.CheckNames() :
+        if ctxt.CheckNames() and ctxt.isLess16() :
             fsm.getState().Exit(fsm)
             fsm.clearState()
             try:
                 ctxt.Acceptable()
                 ctxt.CountTermsInc()
+                ctxt.InsertValnameinDict()
             finally:
                 fsm.setState(MainMap.OK)
                 fsm.getState().Entry(fsm)
@@ -440,6 +442,7 @@ class MainMap_StrLit(MainMap_Default):
                 ctxt.Acceptable()
                 ctxt.CounterInc()
                 ctxt.CountTermsInc()
+                ctxt.InsertValnameinDict()
             finally:
                 fsm.setState(MainMap.OK)
                 fsm.getState().Entry(fsm)
@@ -604,7 +607,6 @@ class MainMap_OK(MainMap_Default):
         fsm.clearState()
         try:
             ctxt.Acceptable()
-            ctxt.InsertValnameinDict()
         finally:
             fsm.setState(endState)
 

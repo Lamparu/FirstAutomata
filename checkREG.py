@@ -20,17 +20,15 @@ def checkFILE():
     numline = 0
     for line in f.readlines():
         numline += 1
-        here = True
         match = re.fullmatch(refer, line.rstrip())
         if match:
+            here = True
             # print(numline, ' ', match.group('strnum'))
             res = 0
             gr = re.split(spref, line.rstrip())
             if gr[-1] == '':
                 gr = gr[:-1]
             # print(gr)
-            # print(gr[1:-1])
-            # print(gr[-1])
             for ind in gr[1:]:
                 if dict_val.get(ind) is None:
                     here = False
@@ -55,21 +53,28 @@ def checkFILE():
     resf.close()
 
 
-def checkREGstr(strch):
-    res = 1
+def checkREGstr(strch, dict_val):
+    dic = {}
+    for ind in dict_val:
+        dic[ind] = 0
     match = re.fullmatch(refer, strch.rstrip())
-    gr = re.split(spref, strch.rstrip())
     if match:
-        # print(match)
+        # print(numline, ' ', match.group('strnum'))
+        res = 0
+        gr = re.split(spref, strch.rstrip())
+        if gr[-1] == '':
+            gr = gr[:-1]
         # print(gr)
-        if match.group('lit1'):
-            if match.group('valname') != match.group('lit1'):
-                return 'Unacceptable'
         for ind in gr[1:]:
-            if match.group('valname') == ind:
-                res += 1
-            else:
+            if dic.get(ind) is None:
                 return 'Unacceptable'
-        return match.group('strnum') + ': ' + str(res)
+            else:
+                dic[ind] = 1
+        dic[match.group('valname')] = 1
+        # print(dict_val)
+        for val in dic:
+            if dic.get(val) == 1:
+                res += 1
+        return match.group('strnum') + ' : ' + str(res)
     else:
         return 'Unacceptable'

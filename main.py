@@ -7,6 +7,8 @@ from PLYmain import PLYcheck
 from PLYmain import checkPLYstr
 from TimingGraph import printGraph
 
+litstr_dict = {'a': 0, 'arg': 0, 'ber': 0}
+
 ch = 1
 while int(ch) != 0:
     print('1. Generate file')
@@ -22,11 +24,12 @@ while int(ch) != 0:
             gen = GENclass()
             gen.FILEgenerator()
         elif int(ch) == 2:
+            print('Names of values you can use: ', list(litstr_dict.keys()))
             print('Write: ')
             strcheck = input()
-            print('RegEx: ' + checkREGstr(strcheck))
-            print('SMC: ' + checkSMCstr(strcheck))
-            print('PLY: ' + checkPLYstr(strcheck))
+            print('RegEx: ' + checkREGstr(strcheck, litstr_dict))
+            print('SMC: ' + checkSMCstr(strcheck, litstr_dict))
+            print('PLY: ' + checkPLYstr(strcheck, litstr_dict))
         elif int(ch) == 3:
             checkFILE()
         elif int(ch) == 4:

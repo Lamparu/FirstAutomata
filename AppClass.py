@@ -28,6 +28,13 @@ class AppClass:
     def GetStrNum(self):
         return self._digstr
 
+    def GetValDict(self):
+        return self._val_dict
+
+    def SetValDict(self, ndict):
+        for ind in ndict:
+            self._val_dict[ind] = 0
+
     def Acceptable(self):
         self._is_acceptable = True
 

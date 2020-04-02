@@ -8,12 +8,15 @@ def readTimeFileSMC():
     f.close()
 
 
-def checkSMCstr(strch):
+def checkSMCstr(strch, dict_valnames):
     machine = AppClass.AppClass()
+    # print(machine.GetValDict())
+    machine.SetValDict(dict_valnames)
+    # print(machine.GetValDict())
     match = machine.CheckString(strch)
-    # return machine.Acceptable()
+    # print(machine.GetValDict())
     if match:
-        return machine.GetStrNum() + ': ' + str(machine.getNumLitstr())
+        return str(machine.GetStrNum()) + ' : ' + str(machine.getNumLitstr())
     else:
         return 'Unacceptable'
 
